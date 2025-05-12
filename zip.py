@@ -6,6 +6,7 @@ import time
 import zipfile
 import argparse
 import logging
+import tarfile
 
 DATETIME_FORMAT = "%Y-%m-%d_%H-%M-%S"
 LOG_FORMATTER = logging.Formatter(fmt='%(asctime)s.%(msecs)03d %(message)s', datefmt=DATETIME_FORMAT)
@@ -42,10 +43,18 @@ def print_time(time):
 def unzip_archives(paths):
     for path in paths:
         LOGGER.info("unzipping archive [%s]" % path)
-        with zipfile.ZipFile(path, 'r') as z:
-            z.extractall()
-            z.close()
-        LOGGER.info("unzipped archive [%s]" % path)
+        if ".zip" in path:
+            with zipfile.ZipFile(path, 'r') as z:
+                z.extractall()
+                z.close()
+            LOGGER.info("unzipped archive [%s]" % path)
+        elif ".tar" in path:
+            with tarfile.open(path, 'r') as t:
+                t.extractall()
+                t.close()
+            LOGGER.info("untarred archive [%s]" % path)
+        else:
+            LOGGER.error("failed to unpack as [%s] is not [ .zip, .tar] file" % path)
 
 @timeit
 def zip_files_or_folders(archive, paths):
